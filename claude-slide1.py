@@ -591,3 +591,140 @@ if __name__ == "__main__":
     # plot_discrete_signal(x_e, n_e, title="Even part of x[n]", ax=axes[1, 1])
     # plt.tight_layout()
     # plt.show()
+
+def interpolate_signal(
+    t_original: np.ndarray,
+    x_original: np.ndarray,
+    t_query: np.ndarray
+) -> np.ndarray:
+    """
+    Interpolate x at t_query, given known samples (t_original, x_original).
+    Missing values = average of nearest left and right known samples.
+    Exact matches return the known sample directly.
+    """
+    order = np.argsort(t_original)
+    t_sorted = t_original[order]
+    x_sorted = x_original[order]
+    n = len(t_sorted)
+
+    # Insertion index: t_sorted[idx-1] <= t_query < t_sorted[idx] (roughly)
+    idx = np.searchsorted(t_sorted, t_query, side='left')
+    idx_clipped = np.clip(idx, 0, n - 1)
+
+    # Exact match: query lands precisely on a known sample
+    exact_match = (idx < n) & np.isclose(t_sorted[idx_clipped], t_query)
+
+    left_idx = np.clip(idx - 1, 0, n - 1)
+    right_idx = np.clip(idx, 0, n - 1)
+
+    left_val = x_sorted[left_idx]
+    right_val = x_sorted[right_idx]
+
+    averaged = 0.5 * (left_val + right_val)
+    result = np.where(exact_match, x_sorted[idx_clipped], averaged)
+
+    # Queries outside the known range are undefined -> NaN (dropped when plotting)
+    out_of_range = (t_query < t_sorted[0]) | (t_query > t_sorted[-1])
+    result = np.where(out_of_range, np.nan, result)
+
+    return result
+
+
+
+
+
+"""
+Time Scaling of a Discrete-Time Signal
+---------------------------------------
+Implements y[n] = x[k*n]   (compression, k > 1)
+       and y[n] = x[n/k]   (expansion,   k < -1, zero-stuffed)
+
+Run directly to see a worked example with stem plots.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def time_scale_signal(x: np.ndarray, k: int, *args) -> np.ndarray:
+    """
+    Time-scale a discrete signal x[n] by integer factor k.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input signal samples, assumed indexed from n = 0.
+    k : int
+        Scaling factor.
+        k > 1  -> COMPRESSION: y[n] = x[k*n]  (keeps every k-th sample)
+        k < -1 -> EXPANSION:   y[n] = x[n/k]  (inserts |k|-1 zeros
+                                               between consecutive samples)
+
+    Returns
+    -------
+    np.ndarray
+        The time-scaled signal y[n].
+    """
+    if k == 0:
+        raise ValueError("k must be nonzero")
+
+    if k > 0:
+        # Compression: downsample, keep every k-th sample
+        y = x[::k]
+    else:
+        # Expansion: zero-stuff k-1 zeros between samples
+        k = abs(k)
+        y = np.zeros((len(x) - 1) * k + 1, dtype=x.dtype)
+        y[::k] = x
+
+    return y
+
+
+def plot_signal(ax, n, x, title):
+    ax.stem(n, x, basefmt=" ")
+    ax.set_title(title)
+    ax.set_xlabel("n")
+    ax.set_ylabel("x[n]")
+    ax.grid(True, alpha=0.3)
+
+
+def main():
+    # --- Example input signal ---
+    x = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+    n = np.arange(len(x))
+
+    # --- Compression: y[n] = x[2n] ---
+    k_compress = 2
+    y_compress = time_scale_signal(x, k_compress)
+    n_compress = np.arange(len(y_compress))
+
+    # --- Expansion: y[n] = x[n/3] ---
+    k_expand = -3
+    y_expand = time_scale_signal(x, k_expand)
+    n_expand = np.arange(len(y_expand))
+
+    # --- Print results ---
+    print("Original signal x[n]:")
+    print(" n:", n)
+    print(" x:", x)
+
+    print(f"\nCompressed signal y[n] = x[{k_compress}n]:")
+    print(" n:", n_compress)
+    print(" y:", y_compress)
+
+    print(f"\nExpanded signal y[n] = x[n/{abs(k_expand)}]:")
+    print(" n:", n_expand)
+    print(" y:", y_expand)
+
+    # --- Plot all three ---
+    fig, axes = plt.subplots(3, 1, figsize=(8, 9))
+    plot_signal(axes[0], n, x, "Original signal x[n]")
+    plot_signal(axes[1], n_compress, y_compress, f"Compressed: y[n] = x[{k_compress}n]")
+    plot_signal(axes[2], n_expand, y_expand, f"Expanded: y[n] = x[n/{abs(k_expand)}]")
+    plt.tight_layout()
+    plt.savefig("time_scale_demo.png", dpi=150)
+    print("\nPlot saved to time_scale_demo.png")
+
+
+if __name__ == "__main__":
+    main()
