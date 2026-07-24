@@ -351,7 +351,7 @@ Output signal y[n]:
 
 Verification
 Output range: [0, 81]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 8.881784197e-16
 
 Stem plot: outputs/4\plot\builtin_2_moving_average_3.png
 Color plot: outputs/4\color\builtin_2_moving_average_3.png
@@ -535,7 +535,7 @@ Output signal y[n]:
 
 Verification
 Output range: [0, 83]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 1.7763568394e-15
 
 Stem plot: outputs/4\plot\builtin_3_moving_average_5.png
 Color plot: outputs/4\color\builtin_3_moving_average_5.png
@@ -723,7 +723,7 @@ Output signal y[n]:
 
 Verification
 Output range: [0, 85]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 1.7763568394e-15
 
 Stem plot: outputs/4\plot\builtin_4_moving_average_7.png
 Color plot: outputs/4\color\builtin_4_moving_average_7.png
@@ -903,7 +903,7 @@ Output signal y[n]:
 
 Verification
 Output range: [0, 81]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 8.881784197e-16
 
 Stem plot: outputs/4\plot\builtin_5_weighted_smoothing.png
 Color plot: outputs/4\color\builtin_5_weighted_smoothing.png

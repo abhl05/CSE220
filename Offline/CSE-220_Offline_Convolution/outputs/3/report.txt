@@ -177,7 +177,7 @@ Output signal y[n]:
 
 Verification
 Output range: [0, 82]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 1.7763568394e-15
 
 Stem plot: outputs/3\plot\convolution.png
 Color plot: outputs/3\color\convolution.png

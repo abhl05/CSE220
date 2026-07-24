@@ -17,69 +17,86 @@ def readable_time_ticks(time_values, max_labels=18):
 class DiscreteSignal:
     """Finite discrete-time signal with integer indices."""
 
-    # Create a finite discrete-time signal over the given integer range.
+    # Arguments: start_time and end_time are integers with start_time <= end_time.
+    # Output: None; initialize start_time, end_time, and zero-valued stored samples.
+    # Example: DiscreteSignal(-2, 3) represents samples for n = -2, -1, ..., 3.
     def __init__(self, start_time, end_time):
-        # raise NotImplementedError("Complete the DiscreteSignal constructor")
+        if end_time < start_time:
+            raise ValueError("end_time must be >= start_time")
         self.start_time = int(start_time)
         self.end_time = int(end_time)
-        self.values = np.zeros(end_time - start_time + 1, dtype=float)
+        self.values = np.zeros(self.end_time - self.start_time + 1, dtype=float)
 
-    # Return the number of stored samples in the signal.
+    # Arguments: none.
+    # Returns: int, the number of stored samples in this finite signal.
+    # Example: len(DiscreteSignal(-2, 3)) should be 6.
     def __len__(self):
-        # raise NotImplementedError("Complete __len__")
         return len(self.values)
 
-    # Return the integer time indices covered by the signal.
+    # Arguments: none.
+    # Returns: range of integer time indices covered by the signal.
+    # Example: DiscreteSignal(-1, 2).times() should cover -1, 0, 1, 2.
     def times(self):
-        # raise NotImplementedError("Complete times")
-        return range(self.start_time, self.end_time + 1) 
+        return range(self.start_time, self.end_time + 1)
 
-    # Return the signal value at the given time index.
+    # Arguments: t is an integer time index.
+    # Returns: float, the signal value at t; return 0.0 if t is outside the range.
+    # Example: if x[2] = 5, then x.get_value_at_time(2) should return 5.0.
     def get_value_at_time(self, t):
-        # raise NotImplementedError("Complete get_value_at_time")
-        if self.start_time <= t <= self.end_time:
-            return self.values[t - self.start_time]
-        return 0.0
+        if t < self.start_time or t > self.end_time:
+            return 0.0
+        return float(self.values[t - self.start_time])
 
-    # Set the signal value at the given time index.
+    # Arguments: t is an integer time index, value is the sample value to store.
+    # Output: None; update the stored sample at t, or raise an error if t is outside.
+    # Example: x.set_value_at_time(2, 5) makes x[2] equal to 5.
     def set_value_at_time(self, t, value):
-        # raise NotImplementedError("Complete set_value_at_time")
-        if self.start_time <= t <= self.end_time:
-            self.values[t - self.start_time] = value
+        if t < self.start_time or t > self.end_time:
+            raise IndexError(
+                f"{t} is outside range [{self.start_time}, {self.end_time}]"
+            )
+        self.values[t - self.start_time] = float(value)
 
-    # Return a shifted copy of the signal.
+    # Arguments: k is an integer shift amount.
+    # Returns: DiscreteSignal, a copy with indices shifted so y[n] = x[n - k].
+    # Example: shifting a signal over 0..2 by 3 returns a signal over 3..5.
     def shift(self, k):
-        # raise NotImplementedError("Complete shift")
-        shifted_signal = DiscreteSignal(self.start_time + k, self.end_time + k)
-        shifted_signal.values = np.copy(self.values)
-        return shifted_signal
+        k = int(k)
+        shifted = DiscreteSignal(self.start_time + k, self.end_time + k)
+        shifted.values = self.values.copy()
+        return shifted
 
-    # Return the sum of this signal and another signal.
+    # Arguments: other is another DiscreteSignal.
+    # Returns: DiscreteSignal over the combined range with sample-wise sums.
+    # Example: if x[0] = 2 and z[0] = 3, then x.add(z)[0] should be 5.
     def add(self, other):
-        # raise NotImplementedError("Complete add")
-        new_start = min(self.start_time, other.start_time)
-        new_end = max(self.end_time, other.end_time)
-        sum_signal = DiscreteSignal(new_start, new_end)
-        for n in sum_signal.times():
-            sum_signal.set_value_at_time(n, self.get_value_at_time(n) + other.get_value_at_time(n))
-        return sum_signal            
+        start = min(self.start_time, other.start_time)
+        end = max(self.end_time, other.end_time)
+        result = DiscreteSignal(start, end)
+        for n in result.times():
+            result.set_value_at_time(
+                n, self.get_value_at_time(n) + other.get_value_at_time(n)
+            )
+        return result
 
-    # Return a scaled copy of the signal.
+    # Arguments: scalar is a number used to multiply every stored sample.
+    # Returns: DiscreteSignal with the same time range and scaled sample values.
+    # Example: if x[1] = 4, then x.multiply(0.5)[1] should be 2.
     def multiply(self, scalar):
-        # raise NotImplementedError("Complete multiply")
-        scaled_signal = DiscreteSignal(self.start_time, self.end_time)
-        scaled_signal.values = float(scalar) * self.values
-        return scaled_signal
+        result = DiscreteSignal(self.start_time, self.end_time)
+        result.values = self.values * float(scalar)
+        return result
 
-    # Return the nonzero samples of the signal.
+    # Arguments: tolerance is the threshold below which values are treated as zero.
+    # Returns: list of (time_index, value) tuples for samples with abs(value) > tolerance.
+    # Example: values [1, 0, 3] starting at n = 0 should return [(0, 1), (2, 3)].
     def nonzero_samples(self, tolerance=1e-12):
-        # raise NotImplementedError("Complete nonzero_samples")
         samples = []
         for n in self.times():
             value = self.get_value_at_time(n)
             if abs(value) > tolerance:
                 samples.append((n, value))
-        return samples 
+        return samples
 
     def plot(self, title, save_path=None, ax=None):
         import matplotlib.pyplot as plt
@@ -110,63 +127,70 @@ class DiscreteSignal:
 class LTISystem:
     """Discrete-time LTI system described by a finite impulse response."""
 
-    # Store the impulse response that defines the LTI system.
+    # Arguments: impulse_response is a DiscreteSignal representing h[n].
+    # Output: None; store the impulse response that defines this LTI system.
+    # Example: LTISystem(impulse_identity()) creates the identity system.
     def __init__(self, impulse_response):
-        # raise NotImplementedError("Complete the LTISystem constructor")
         self.impulse_response = impulse_response
 
-    # Return the output time range for the convolution result.
+    # Arguments: input_signal is a DiscreteSignal representing x[n].
+    # Returns: (start, end) tuple for the convolution output y[n].
+    # Example: x over 0..4 and h over 0..2 produce output range (0, 6).
     def output_range(self, input_signal):
-        # raise NotImplementedError("Complete output_range")
-        start_time = input_signal.start_time + self.impulse_response.start_time
-        end_time = input_signal.end_time + self.impulse_response.end_time
-        return start_time, end_time
-    
-    # Return all shifted and scaled impulse-response components for the input.
-    
-    # For every nonzero input sample x[k], the system's response to the single
-    # scaled impulse x[k]*delta[n-k] is x[k]*h[n-k]: h shifted by k, scaled by x[k].
+        h = self.impulse_response
+        start = input_signal.start_time + h.start_time
+        end = input_signal.end_time + h.end_time
+        return start, end
+
+    # Arguments: input_signal is a DiscreteSignal representing x[n].
+    # Returns: list of (k, component_signal) for each nonzero input sample x[k].
+    # Example: x[2] = 3 contributes the component 3*h[n - 2].
     def get_response_components(self, input_signal):
-        # raise NotImplementedError("Complete get_response_components")
         h = self.impulse_response
         components = []
         for k, x_k in input_signal.nonzero_samples():
-            component = h.shift(k).multiply(x_k)
-            components.append(component)
+            component_signal = h.shift(k).multiply(x_k)
+            components.append((k, component_signal))
         return components
 
-    # Return the system output using superposition of response components.
+    # Arguments: input_signal is a DiscreteSignal representing x[n].
+    # Returns: DiscreteSignal y[n], computed by adding all response components.
+    # Example: for the identity impulse, the output should match the input signal.
     def output_by_superposition(self, input_signal):
-        # raise NotImplementedError("Complete output_by_superposition")
         start, end = self.output_range(input_signal)
         result = DiscreteSignal(start, end)
-        for component in self.get_response_components(input_signal):
-            result = result.add(component)
+        for _, component_signal in self.get_response_components(input_signal):
+            result = result.add(component_signal)
         return result
 
-    # Return the nonzero product terms that contribute to one output sample.
+    # Arguments: input_signal is a DiscreteSignal and n is one output time index.
+    # Returns: list of (k, x_k, h_n_minus_k, product) nonzero contribution tuples.
+    # Example: a term may look like (2, 3.0, 0.5, 1.5) for x[2]h[n - 2].
+    #
+    # Theory: this evaluates y[n] = sum_k x[k]*h[n-k] directly, term by term,
+    # without building any intermediate shifted/scaled signals -- a genuinely
+    # different computation path from get_response_components / superposition.
     def get_contributions_at_time(self, input_signal, n):
-        # raise NotImplementedError("Complete get_contributions_at_time")
         h = self.impulse_response
         contributions = []
         for k, x_k in input_signal.nonzero_samples():
-            h_value = h.get_value_at_time(n - k)
-            if h_value != 0.0:
-                contributions.append((k, x_k, h_value, x_k * h_value))
+            h_n_minus_k = h.get_value_at_time(n - k)
+            if h_n_minus_k != 0.0:
+                contributions.append((k, x_k, h_n_minus_k, x_k * h_n_minus_k))
         return contributions
 
-    # Return one output sample of the LTI system.
+    # Arguments: input_signal is a DiscreteSignal and n is one output time index.
+    # Returns: float, the convolution-sum value y[n].
+    # Example: output_at_time(x, 4) returns the scalar sample y[4].
     def output_at_time(self, input_signal, n):
-        # raise NotImplementedError("Complete output_at_time")
-        return sum(
-            term for _, _, _, term in self.get_contributions_at_time(input_signal, n)
-        )
+        return sum(product for _, _, _, product in self.get_contributions_at_time(input_signal, n))
 
-    # Return the complete output signal of the LTI system.
+    # Arguments: input_signal is a DiscreteSignal representing x[n].
+    # Returns: DiscreteSignal containing every output sample y[n].
+    # Example: system.output(x) returns the full convolution result x[n] * h[n].
     def output(self, input_signal):
-        # raise NotImplementedError("Complete output")
         start, end = self.output_range(input_signal)
         result = DiscreteSignal(start, end)
-        for n in range(start, end + 1):
+        for n in result.times():
             result.set_value_at_time(n, self.output_at_time(input_signal, n))
         return result

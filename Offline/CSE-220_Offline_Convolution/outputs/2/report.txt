@@ -91,7 +91,7 @@ Output signal y[n]:
 
 Verification
 Output range: [-2, 7]
-Maximum absolute difference between two methods: 0
+Maximum absolute difference between two methods: 5.55111512313e-17
 
 Stem plot: outputs/2\plot\builtin_3_moving_average_5.png
 Color plot: outputs/2\color\builtin_3_moving_average_5.png
