@@ -38,7 +38,7 @@ class FourierEpicycles:
         # TODO: implement this method
         # raise NotImplementedError("Implement __init__")
         self.t = t
-        self.T = float(t[-1])
+        self.T = float(t[-1] - t[0])
         self.omega = float(2*np.pi/self.T)
         self.signal = signal
         self.N = n_harmonics

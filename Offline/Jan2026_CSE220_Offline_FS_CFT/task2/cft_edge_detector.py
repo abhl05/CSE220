@@ -68,7 +68,30 @@ class CFT2D:
         real, imag : two 2D numpy arrays, each of shape self.I.shape
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement CFT2D.compute_cft")
+        # raise NotImplementedError("Implement CFT2D.compute_cft")
+        
+        # I(y, x) -> (Ny, Nx)
+        
+        cos_ux = np.cos(2 * np.pi * np.outer(self.u, self.x)) # (Nu, Nx)
+        sin_ux = np.sin(2 * np.pi * np.outer(self.u, self.x)) # (Nu, Nx)
+
+        cos_vy = np.cos(2 * np.pi * np.outer(self.v, self.y)) # (Nv, Ny)
+        sin_vy = np.sin(2 * np.pi * np.outer(self.v, self.y)) # (Nv, Ny)
+
+        # (Ny, 1, Nx) * (1, Nu, Nx) -> (Ny, Nu, Nx) -> (Ny, Nu) 
+        C_x = np.trapezoid(self.I[:, None, :] * cos_ux[None, :, :], self.x, axis=2)   
+        S_x = np.trapezoid(self.I[:, None, :] * sin_ux[None, :, :], self.x, axis=2)   
+        
+        # (Nv, Ny, 1) * (1, Ny, Nu) -> (Nv, Ny, Nu) -> (Nv, Nu)
+        cos_vy_C_x = np.trapezoid(cos_vy[:, :, None] * C_x[None, :, :], self.y, axis=1)  
+        sin_vy_S_x = np.trapezoid(sin_vy[:, :, None] * S_x[None, :, :], self.y, axis=1)  
+        cos_vy_S_x = np.trapezoid(cos_vy[:, :, None] * S_x[None, :, :], self.y, axis=1)  
+        sin_vy_C_x = np.trapezoid(sin_vy[:, :, None] * C_x[None, :, :], self.y, axis=1)  
+
+        real = cos_vy_C_x - sin_vy_S_x 
+        imag = -(cos_vy_S_x + sin_vy_C_x)
+
+        return real, imag
 
     def plot_magnitude(self):
         """
@@ -78,7 +101,15 @@ class CFT2D:
         debugging -- not called by the command-line entry point below.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement CFT2D.plot_magnitude")
+        # raise NotImplementedError("Implement CFT2D.plot_magnitude")
+        real, imag = self.compute_cft()
+        magnitude = np.sqrt(real**2 + imag**2)
+        plt.imshow(np.log(1 + magnitude))
+        plt.title("Log-scaled Magnitude Spectrum")
+        plt.xlabel("u")
+        plt.ylabel("v")
+        plt.colorbar()
+        plt.show()
 
 
 class FrequencyFilter:
@@ -137,9 +168,28 @@ class InverseCFT2D:
             for how it gets turned into a displayable edge map.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement InverseCFT2D.reconstruct")
+        # raise NotImplementedError("Implement InverseCFT2D.reconstruct")
+        cos_ux = np.cos(2 * np.pi * np.outer(self.u, self.x)) # (Nu, Nx)
+        sin_ux = np.sin(2 * np.pi * np.outer(self.u, self.x)) # (Nu, Nx)
+        cos_vy = np.cos(2 * np.pi * np.outer(self.v, self.y)) # (Nv, Ny)
+        sin_vy = np.sin(2 * np.pi * np.outer(self.v, self.y)) # (Nv, Ny)
+        
+        # (Nv, 1, Nu) * (Nv, Ny, 1) -> (Nv, Ny, Nu) -> (Ny, Nu)
+        real_cos = np.trapezoid(real[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
+        real_sin = np.trapezoid(real[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
+        imag_cos = np.trapezoid(imag[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
+        imag_sin = np.trapezoid(imag[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
 
-
+        C_v = real_cos - imag_sin
+        S_v = real_sin + imag_cos
+        
+        # (1, Nu, Nx) * (Ny, Nu, 1) -> (Ny, Nu, Nx) -> (Ny, Nx)
+        cos_ux_C_v = np.trapezoid(cos_ux[None, :, :] * C_v[:, :, None], self.u, axis=1)  
+        sin_ux_S_v = np.trapezoid(sin_ux[None, :, :] * S_v[:, :, None], self.u, axis=1)  
+        
+        image = cos_ux_C_v - sin_ux_S_v
+        return image
+        
 # =====================================================
 # Command-line entry point (given -- do not modify)
 # Usage: python3 cft_edge_detector.py <input_image_path> <output_image_path> [cutoff]
