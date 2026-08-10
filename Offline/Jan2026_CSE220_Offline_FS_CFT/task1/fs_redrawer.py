@@ -36,7 +36,13 @@ class FourierEpicycles:
                            been called
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement __init__")
+        # raise NotImplementedError("Implement __init__")
+        self.t = t
+        self.T = float(t[-1])
+        self.omega = float(2*np.pi/self.T)
+        self.signal = signal
+        self.N = n_harmonics
+        self.coeffs = {}
 
     def calculate_cn(self, n):
         """
@@ -49,7 +55,9 @@ class FourierEpicycles:
         n may be zero, positive, or negative.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement calculate_cn")
+        # raise NotImplementedError("Implement calculate_cn")
+        cn = (1/self.T) * np.trapezoid(self.signal * np.exp(-1j * n * self.omega * self.t), self.t)
+        return cn
 
     def calculate_all_coefficients(self):
         """
@@ -57,7 +65,9 @@ class FourierEpicycles:
         n = -N, ..., -1, 0, 1, ..., N by repeatedly calling calculate_cn(n).
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement calculate_all_coefficients")
+        # raise NotImplementedError("Implement calculate_all_coefficients")
+        for n in range(-self.N, self.N + 1, 1) :
+            self.coeffs[n] = self.calculate_cn(n)
 
     def approximate(self, t):
         """
@@ -71,8 +81,16 @@ class FourierEpicycles:
         plotting/animation code calls this both ways.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement approximate")
-
+        # raise NotImplementedError("Implement approximate")
+        # for t_i in t :
+        #     for n in range(-self.N, self.N + 1, 1) :
+        #         sum += self.coeffs.get(n) * np.exp(1j * n * self.omega * t_i)
+        #     f_hat.add(sum)
+        # return f_hat
+        f_hat = np.zeros_like(t, dtype=complex)
+        for n in range(-self.N, self.N + 1):
+            f_hat += self.coeffs[n] * np.exp(1j * n * self.omega * t)
+        return f_hat
 
 if __name__ == "__main__":
     import sys
