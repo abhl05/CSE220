@@ -90,7 +90,7 @@ class FourierEpicycles:
         f_hat = np.zeros_like(t, dtype=complex)
         for n in range(-self.N, self.N + 1):
             f_hat += self.coeffs[n] * np.exp(1j * n * self.omega * t)
-        return f_hat
+        return f_hat.item() if np.isscalar(t) else f_hat
 
 if __name__ == "__main__":
     import sys

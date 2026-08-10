@@ -104,7 +104,9 @@ class CFT2D:
         # raise NotImplementedError("Implement CFT2D.plot_magnitude")
         real, imag = self.compute_cft()
         magnitude = np.sqrt(real**2 + imag**2)
-        plt.imshow(np.log(1 + magnitude))
+        plt.imshow(np.log(1 + magnitude), 
+                   cmap='gray', 
+                   extent=[self.u[0], self.u[-1], self.v[0], self.v[-1]], origin='lower')
         plt.title("Log-scaled Magnitude Spectrum")
         plt.xlabel("u")
         plt.ylabel("v")
@@ -175,10 +177,10 @@ class InverseCFT2D:
         sin_vy = np.sin(2 * np.pi * np.outer(self.v, self.y)) # (Nv, Ny)
         
         # (Nv, 1, Nu) * (Nv, Ny, 1) -> (Nv, Ny, Nu) -> (Ny, Nu)
-        real_cos = np.trapezoid(real[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
-        real_sin = np.trapezoid(real[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
-        imag_cos = np.trapezoid(imag[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
-        imag_sin = np.trapezoid(imag[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
+        real_cos = np.trapezoid(self.real[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
+        real_sin = np.trapezoid(self.real[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
+        imag_cos = np.trapezoid(self.imag[:, None, :] * cos_vy[:, :, None], self.v, axis=0)  
+        imag_sin = np.trapezoid(self.imag[:, None, :] * sin_vy[:, :, None], self.v, axis=0)  
 
         C_v = real_cos - imag_sin
         S_v = real_sin + imag_cos
