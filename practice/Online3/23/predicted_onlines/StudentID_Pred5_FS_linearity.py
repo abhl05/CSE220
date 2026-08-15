@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     # Both shapes must share the exact same t grid (both come from
     # load_svg_path with the same num_points, which always returns t in [0,2*pi]).
-    t, z_heart = load_svg_path("svgs/heart.svg", num_points=1000)
-    _, z_circle = load_svg_path("svgs/circle.svg", num_points=1000)
+    t, z_heart = load_svg_path("D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\heart.svg", num_points=1000)
+    _, z_circle = load_svg_path("D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\circle.svg", num_points=1000)
 
     # combined signal (simple sum - not a geometrically meaningful "drawing",
     # but a valid periodic complex signal to test linearity on)
@@ -45,6 +45,7 @@ if __name__ == "__main__":
              label="|c_n(f) + c_n(g)| theory")
     plt.title("Linearity property of the Fourier Series"); plt.xlabel("n")
     plt.legend(); plt.grid(True)
+    plt.savefig("linearity_magnitude_comparison.png")
     plt.tight_layout(); plt.show()
 
     # ---- visualize the three reconstructed curves -------------------------------
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     ax.plot(fs_h.approximate(t_dense).real, fs_h.approximate(t_dense).imag,
             label="sum h(t) = f(t)+g(t)")
     ax.set_aspect("equal"); ax.legend(); ax.set_title("Individual shapes vs. their sum")
+    plt.savefig("linearity_reconstruction.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment: the MSE is essentially machine-precision zero, confirming linearity -\n"

@@ -16,7 +16,7 @@ trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
 
 
 if __name__ == "__main__":
-    SVG_PATH = "svgs/heart.svg"
+    SVG_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\heart.svg"
     N = 150
 
     t, z = load_svg_path(SVG_PATH, num_points=1000)
@@ -57,6 +57,7 @@ if __name__ == "__main__":
     axes[1].plot(ns[significant], wrap(np.angle(theory))[significant], "x", label="theory")
     axes[1].set_title("Differentiation property: phase")
     axes[1].set_xlabel("n"); axes[1].legend(); axes[1].grid(True)
+    plt.savefig("derivative_property.png")
     plt.tight_layout(); plt.show()
 
     # ---- constant-speed (equal arc-length) sanity check on svg_utils' claim ----
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     plt.title("Pen speed |dz/dt| over one period\n"
               "(svg_utils.load_svg_path claims equal arc-length -> should be ~constant)")
     plt.xlabel("t"); plt.ylabel("|v(t)|"); plt.legend(); plt.grid(True)
+    plt.savefig("speed_over_time.png")
     plt.tight_layout(); plt.show()
 
     print(f"\nMean pen speed                                        = {mean_speed:.4f}")

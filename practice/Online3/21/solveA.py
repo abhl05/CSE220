@@ -180,6 +180,7 @@ if __name__ == "__main__":
     axes[1, 2].set_title("Approach C: full-row notch\n(best for this image)")
     for ax in axes.ravel():
         ax.axis("off")
+    plt.savefig("denoising_results.png")
     plt.tight_layout()
     plt.show()
 

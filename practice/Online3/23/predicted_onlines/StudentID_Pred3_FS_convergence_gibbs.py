@@ -28,8 +28,8 @@ def reconstruction_mse(t, z_true, N):
 
 if __name__ == "__main__":
     N_values = [5, 10, 20, 50, 100, 150, 300]
-    shapes = {"star (sharp corners)": "svgs/star.svg",
-              "circle (smooth)": "svgs/circle.svg"}
+    shapes = {"star (sharp corners)": "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\star.svg",
+              "circle (smooth)": "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\circle.svg"}
 
     results = {}
     for label, path in shapes.items():
@@ -50,10 +50,11 @@ if __name__ == "__main__":
     plt.ylabel("Reconstruction MSE (log scale)")
     plt.title("Convergence rate: smooth vs cornered shape")
     plt.legend(); plt.grid(True, which="both")
+    plt.savefig("convergence_rate.png")
     plt.tight_layout(); plt.show()
 
     # ---- zoom on a star corner at low N to show Gibbs overshoot ----------------
-    t_star, z_star = load_svg_path("svgs/star.svg", num_points=1000)
+    t_star, z_star = load_svg_path("D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\star.svg", num_points=1000)
     fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
     for ax, N in zip(axes, [10, 50, 150]):
         fs = FourierEpicycles(t_star, z_star, n_harmonics=N)
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         ax.plot(z_star.real, z_star.imag, color="0.6", lw=3, alpha=0.6, label="Original")
         ax.plot(z_hat.real, z_hat.imag, color="crimson", lw=1.2, label=f"N={N}")
         ax.set_aspect("equal"); ax.legend(); ax.set_title(f"Star reconstruction, N={N}")
+    plt.savefig("star_reconstruction_zoom.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment: the star's MSE decays much more slowly with N than the circle's -\n"

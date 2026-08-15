@@ -33,7 +33,7 @@ def band_pass(real, imag, r1, r2):
 
 
 if __name__ == "__main__":
-    IMAGE_PATH = "test_face.png"
+    IMAGE_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task2\\pikachu.png"
 
     img = ContinuousImage(IMAGE_PATH)
     cft2d = CFT2D(img)
@@ -64,6 +64,7 @@ if __name__ == "__main__":
     fig, axes = plt.subplots(1, 2, figsize=(9, 4.5))
     axes[0].imshow(img.image, cmap="gray"); axes[0].set_title("Original"); axes[0].axis("off")
     axes[1].imshow(np.real(recon), cmap="gray"); axes[1].set_title("Reconstructed (unfiltered)"); axes[1].axis("off")
+    plt.savefig("reconstruction_sanity.png")
     plt.tight_layout(); plt.show()
 
     # ---- Part B: band-pass filter -----------------------------------------------
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         ax.imshow(np.real(band_result), cmap="gray")
         ax.set_title(f"band [{r1},{r2}]")
         ax.axis("off")
-
+    plt.savefig("bandpass_filter.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment [Part A]: the round-trip MSE is small relative to the image's full\n"

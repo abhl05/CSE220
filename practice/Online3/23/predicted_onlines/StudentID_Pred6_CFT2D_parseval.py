@@ -17,7 +17,7 @@ trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
 
 
 if __name__ == "__main__":
-    IMAGE_PATH = "test_face.png"   # replace with the exam's actual input image
+    IMAGE_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task2\\pikachu.png"   # replace with the exam's actual input image
 
     img = ContinuousImage(IMAGE_PATH)
     cft2d = CFT2D(img)
@@ -43,6 +43,7 @@ if __name__ == "__main__":
                          origin="lower")
     axes[1].set_title("log(1+|F(u,v)|)")
     plt.colorbar(im, ax=axes[1])
+    plt.savefig("parseval_2d.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment: some relative error here is expected and instructive - a real image\n"

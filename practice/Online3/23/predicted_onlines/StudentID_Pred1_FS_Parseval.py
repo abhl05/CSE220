@@ -27,7 +27,7 @@ def parseval_check(fs: FourierEpicycles):
 
 
 if __name__ == "__main__":
-    SVG_PATH = "svgs/heart.svg"     # change to whichever shape the online gives you
+    SVG_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\heart.svg"     # change to whichever shape the online gives you
     N = 150
 
     t, z = load_svg_path(SVG_PATH, num_points=1000)
@@ -47,6 +47,7 @@ if __name__ == "__main__":
     plt.stem(ns, power)
     plt.title("Power spectrum |c_n|^2 vs harmonic n")
     plt.xlabel("n"); plt.ylabel("|c_n|^2"); plt.grid(True)
+    plt.savefig("power_spectrum.png")
     plt.tight_layout(); plt.show()
 
     # ---- cumulative energy captured vs number of harmonics kept ---------------
@@ -61,6 +62,7 @@ if __name__ == "__main__":
               "(harmonics added in order of decreasing power)")
     plt.xlabel("number of harmonics included"); plt.ylabel("fraction of total energy")
     plt.legend(); plt.grid(True)
+    plt.savefig("cumulative_energy.png")
     plt.tight_layout(); plt.show()
 
     n99 = int(np.searchsorted(frac_energy, 0.99) + 1)

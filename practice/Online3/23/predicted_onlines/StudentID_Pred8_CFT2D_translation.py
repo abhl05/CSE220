@@ -47,7 +47,7 @@ class ShiftedImage(ContinuousImage):
 
 
 if __name__ == "__main__":
-    IMAGE_PATH = "test_face.png"
+    IMAGE_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task2\\pikachu.png"
 
     img = ContinuousImage(IMAGE_PATH)
     cft2d = CFT2D(img)
@@ -84,6 +84,7 @@ if __name__ == "__main__":
     axes[0, 1].imshow(shifted_arr, cmap="gray"); axes[0, 1].set_title(f"Shifted (x0={x0}, y0={y0})"); axes[0, 1].axis("off")
     axes[1, 0].imshow(np.log1p(np.abs(F)), cmap="viridis"); axes[1, 0].set_title("|F(u,v)| (log)"); axes[1, 0].axis("off")
     axes[1, 1].imshow(np.log1p(np.abs(F_shift)), cmap="viridis"); axes[1, 1].set_title("|F_shift(u,v)| (log)"); axes[1, 1].axis("off")
+    plt.savefig("shift_property.png")
     plt.tight_layout(); plt.show()
 
     # ---- controlled sanity check on a signal that decays to ~0 at the domain

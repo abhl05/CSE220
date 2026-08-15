@@ -40,9 +40,8 @@ def energy_fraction_within(real, imag, cutoff):
     inside = np.sqrt((yy - cx) ** 2 + (xx - cy) ** 2) <= cutoff
     return float(mag2[inside].sum() / mag2.sum())
 
-
 if __name__ == "__main__":
-    IMAGE_PATH = "test_face.png"
+    IMAGE_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task2\\pikachu.png"   # replace with the exam's actual input image
 
     img = ContinuousImage(IMAGE_PATH)
     cft2d = CFT2D(img)
@@ -63,7 +62,7 @@ if __name__ == "__main__":
         ax.imshow(np.real(blurred), cmap="gray")
         ax.set_title(f"cutoff={cutoff}\n({frac*100:.1f}% energy)")
         ax.axis("off")
-
+    plt.savefig("lowpass_blur.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment: as cutoff shrinks, more of the fine spatial detail (edges, texture)\n"

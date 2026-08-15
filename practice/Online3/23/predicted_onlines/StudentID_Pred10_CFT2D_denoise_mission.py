@@ -42,7 +42,7 @@ def notch_mask(real, imag, peak_coords, notch_radius=2):
 
 
 if __name__ == "__main__":
-    IMAGE_PATH = "noisy_letter_small.png"   # keep images SMALL - trapz CFT is O(N^3)
+    IMAGE_PATH = "D:\\BUET\\CSE220\\practice\\Online3\\23\\predicted_onlines\\test_assets\\noisy_letter_small.png"   # keep images SMALL - trapz CFT is O(N^3)
 
     img = ContinuousImage(IMAGE_PATH)
     cft2d = CFT2D(img)
@@ -54,7 +54,9 @@ if __name__ == "__main__":
     plt.imshow(np.log1p(mag), cmap="viridis",
                extent=[cft2d.u[0], cft2d.u[-1], cft2d.v[0], cft2d.v[-1]], origin="lower")
     plt.title("Log-magnitude spectrum - look for bright off-center dots")
-    plt.colorbar(); plt.tight_layout(); plt.show()
+    plt.colorbar(); 
+    plt.savefig("noisy_spectrum.png")
+    plt.tight_layout(); plt.show()
 
     # ---- Step 2: automatically find the strongest non-DC peak(s) for convenience
     # (on exam day you may just eyeball this from the plot instead)
@@ -74,6 +76,7 @@ if __name__ == "__main__":
     fig, axes = plt.subplots(1, 2, figsize=(9, 4.5))
     axes[0].imshow(img.image, cmap="gray"); axes[0].set_title("Noisy input"); axes[0].axis("off")
     axes[1].imshow(denoised, cmap="gray"); axes[1].set_title("Denoised (CFT2D notch)"); axes[1].axis("off")
+    plt.savefig("denoised_result.png")
     plt.tight_layout(); plt.show()
 
     print("\nWorkflow reminder for the real exam image:")

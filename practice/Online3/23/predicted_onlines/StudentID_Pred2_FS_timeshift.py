@@ -8,6 +8,8 @@ Built on the offline's FourierEpicycles class (imported unmodified).
 """
 
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 from svg_utils import load_svg_path
@@ -32,7 +34,7 @@ def time_shift_periodic(t, signal, T, t0):
 
 
 if __name__ == "__main__":
-    SVG_PATH = "svgs/heart.svg"
+    SVG_PATH = "D:\\BUET\\CSE220\\Offline\\Jan2026_CSE220_Offline_FS_CFT\\task1\\svgs\\heart.svg"
     N = 150
 
     t, z = load_svg_path(SVG_PATH, num_points=1000)
@@ -76,6 +78,7 @@ if __name__ == "__main__":
                  label="angle(c_n) - n*omega*t0 (theory)")
     axes[1].set_title("Phase: linear-in-n shift introduced by t0")
     axes[1].set_xlabel("n"); axes[1].legend(); axes[1].grid(True)
+    plt.savefig("magnitude_phase_comparison.png")
     plt.tight_layout(); plt.show()
 
     # ---- does the traced SHAPE change? -----------------------------------------
@@ -87,6 +90,7 @@ if __name__ == "__main__":
     plt.plot(z_hat_orig.real, z_hat_orig.imag, lw=2, label="original reconstruction")
     plt.plot(z_hat_shift.real, z_hat_shift.imag, "--", lw=2, label="shifted reconstruction")
     plt.gca().set_aspect("equal"); plt.legend(); plt.title("Shape comparison")
+    plt.savefig("shape_comparison.png")
     plt.tight_layout(); plt.show()
 
     print("\nComment: |d_n| == |c_n| confirms a pure time shift leaves the magnitude\n"
