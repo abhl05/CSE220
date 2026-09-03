@@ -29,7 +29,12 @@ def next_power_of_two(n):
     Both tasks need this to choose a transform length for the radix-2 FFT.
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement next_power_of_two")
+    # raise NotImplementedError("Implement next_power_of_two")
+    k = 1
+    
+    while k < n: 
+        k *=2
+    return k
 
 
 class DFTAnalyzer:
@@ -59,7 +64,13 @@ class DFTAnalyzer:
         numpy.ndarray of complex128, shape (N,)
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement DFTAnalyzer.transform")
+        # raise NotImplementedError("Implement DFTAnalyzer.transform")
+        x = np.asarray(x, dtype=np.complex128)
+        N = x.shape[0]
+        n = np.arange(N) # create an array of indices from 0 to N-1. arange is used to create an array of evenly spaced values within a given range. In this case, it generates an array of integers from 0 to N-1, which represent the indices of the input signal x.        
+        k = n.reshape((N, 1)) # reshape k to be a column vector
+        M = np.exp(-2j * np.pi * k * n / N) # compute the DFT matrix using broadcasting. The expression k * n creates a 2D array where each element is the product of the corresponding elements in k and n. The division by N normalizes the values, and the exponential function computes the complex exponentials for each element in the resulting array. dimension of M is (N, N), where each row corresponds to a frequency component and each column corresponds to a time sample.
+        return np.dot(M, x)  # compute the DFT by taking the dot product of the DFT matrix M and the input signal x. The result is a 1D array of complex numbers representing the frequency components of the input signal. dimension of the output is (N,), where each element corresponds to a frequency component. the product is calculated by summing the products of the corresponding elements in each row of M and the input signal x.
 
     def inverse(self, spectrum):
         """
@@ -76,8 +87,13 @@ class DFTAnalyzer:
             it is safe to take .real.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement DFTAnalyzer.inverse")
-
+        # raise NotImplementedError("Implement DFTAnalyzer.inverse")
+        spectrum = np.asarray(spectrum, dtype=np.complex128)
+        N = spectrum.shape[0] # shape[0] gives the number of elements in the first dimension of the array, which corresponds to the length of the input spectrum.
+        n = np.arange(N) # create an array of indices from 0 to N-1. arange is used to create an array of evenly spaced values within a given range. In this case, it generates an array of integers from 0 to N-1, which represent the indices of the output signal.
+        k = n.reshape((N, 1)) # reshape k to be a column vector
+        M = np.exp(2j * np.pi * k * n / N) # compute the inverse DFT matrix using broadcasting. The expression k * n creates a 2D array where each element is the product of the corresponding elements in k and n. The division by N normalizes the values, and the exponential function computes the complex exponentials for each element in the resulting array. dimension of M is (N, N), where each row corresponds to a time sample and each column corresponds to a frequency component.
+        return np.dot(M, spectrum) / N  # compute the inverse DFT by taking the dot product of the inverse DFT matrix M and the input spectrum, and then dividing by N to include the 1/N factor. The result is a 1D array of complex numbers representing the time-domain signal. dimension of the output is (N,), where each element corresponds to a time sample. the product is calculated by summing the products of the corresponding elements in each row of M and the input spectrum, and then dividing by N to normalize the result.
 
 class FFTTransformer(DFTAnalyzer):
     """
@@ -102,12 +118,64 @@ class FFTTransformer(DFTAnalyzer):
     def transform(self, x):
         """Forward FFT. Same contract as DFTAnalyzer.transform."""
         # TODO: implement this method
-        raise NotImplementedError("Implement FFTTransformer.transform")
+        # raise NotImplementedError("Implement FFTTransformer.transform")
+        x = np.asarray(x, dtype=np.complex128)
+        N = x.shape[0]
+        if N & (N - 1) != 0:  
+            # check if N is a power of two using bitwise operation. If N is not a power of two, raise a ValueError.
+                raise ValueError("Input length must be a power of two.")
+        if N <= 1:
+            return x  # base case: if the input length is 1 or less, return the input as is.
+        
+        a = x.copy()  # perform bit-reversal permutation on the input array x. This rearranges the elements of x in a specific order that is required for the Cooley-Tukey FFT algorithm. The _bit_reverse_permute method takes the input array x and returns a new array with the elements rearranged according to their bit-reversed indices.
+        
+        # bit reversal permutation
+        j = 0
+
+        for i in range(1, N):
+            bit = N >> 1
+
+            while j & bit:
+                j ^= bit
+                bit >>= 1
+
+            j ^= bit
+
+            if i < j:
+                a[i], a[j] = a[j], a[i]
+                
+        length = 2
+        
+        while length <= N:
+            half_length = length // 2
+            
+            twiddle_factor = np.exp(-2j * np.pi * np.arange(half_length) / length)
+            for start in range(0, N, length):
+                for i in range(half_length):
+                    g = a[start + i]
+                    h = a[start + i + half_length] * twiddle_factor[i]
+                    a[start + i] = g + h
+                    a[start + i + half_length] = g - h
+            length *= 2
+        return a
 
     def inverse(self, spectrum):
         """Inverse FFT, including the 1/N factor."""
         # TODO: implement this method
-        raise NotImplementedError("Implement FFTTransformer.inverse")
+        # raise NotImplementedError("Implement FFTTransformer.inverse")
+        spectrum = np.asarray(spectrum, dtype=np.complex128)
+
+        N = len(spectrum)
+
+        if N == 0:
+            return spectrum
+
+        if N & (N - 1):
+            raise ValueError("FFT length must be a power of two")
+
+        return np.conjugate(
+            self.transform(np.conjugate(spectrum))
+        ) / N
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +203,6 @@ class ArbitraryLengthFFT(FFTTransformer):
     def transform(self, x):
         # TODO (bonus): implement this method
         raise NotImplementedError("Bonus: implement ArbitraryLengthFFT.transform")
-
     def inverse(self, spectrum):
         # TODO (bonus): implement this method
         raise NotImplementedError("Bonus: implement ArbitraryLengthFFT.inverse")

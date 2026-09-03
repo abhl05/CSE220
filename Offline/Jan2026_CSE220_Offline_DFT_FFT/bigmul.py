@@ -59,7 +59,20 @@ def to_limbs(text, base_digits=BASE_DIGITS):
         sees it.
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement to_limbs")
+    # raise NotImplementedError("Implement to_limbs")
+    text = text.strip()
+    sign = -1 if text.startswith('-') else 1
+    if text.startswith(('+', '-')):
+        text = text[1:]
+    text = text.lstrip('0') or '0'  # Handle leading zeros
+    limbs = []
+    for end in range(len(text), 0, -base_digits):
+        start = max(0, end - base_digits)
+
+        limbs.append(
+            int(text[start:end])
+        )
+    return sign, np.array(limbs, dtype=np.int64)
 
 
 def from_limbs(sign, limbs, base_digits=BASE_DIGITS):
@@ -77,7 +90,34 @@ def from_limbs(sign, limbs, base_digits=BASE_DIGITS):
         The decimal representation. "0" must come out as "0", not "-0" or "".
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement from_limbs")
+    # raise NotImplementedError("Implement from_limbs")
+    base = 10 ** base_digits
+    carry = 0
+
+    for i in range(len(limbs)):
+        total = int(limbs[i]) + carry
+        limbs[i] = total % base
+        carry = total // base
+
+    while carry:
+        limbs = np.append(limbs, carry % base)
+        carry //= base
+
+    while len(limbs) > 1 and limbs[-1] == 0: # remove leading zero limbs
+        limbs = limbs[:-1]
+
+    if len(limbs) == 1 and limbs[0] == 0: # zero case
+        return "0"
+
+    result = str(int(limbs[-1])) # MSB
+
+    for limb in reversed(limbs[:-1]):
+        result += str(int(limb)).zfill(base_digits) # zero fill
+
+    if sign < 0:
+        result = "-" + result
+
+    return result
 
 
 def multiply_transform(a, b, engine):
@@ -111,8 +151,25 @@ def multiply_transform(a, b, engine):
         you used (report.txt has to state it).
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement multiply_transform")
-
+    # raise NotImplementedError("Implement multiply_transform")
+    conv_len = len(a) + len(b) - 1
+    if engine.name == "fft":
+        N = next_power_of_two(conv_len)
+    else:
+        N = conv_len
+    
+    A = np.zeros(N, dtype=np.complex128)
+    B = np.zeros(N, dtype=np.complex128)
+    A[:len(a)] = a
+    B[:len(b)] = b
+    
+    FA = engine.transform(A)
+    FB = engine.transform(B)
+    FC = FA * FB
+    
+    c = engine.inverse(FC)
+    coefficients = np.rint(c.real).astype(np.int64) # round to nearest integer
+    return coefficients[:conv_len], N
 
 def multiply_schoolbook(a, b):
     """
@@ -124,7 +181,12 @@ def multiply_schoolbook(a, b):
     sizes.
     """
     # TODO (optional): implement this function
-    raise NotImplementedError("Optional: implement multiply_schoolbook")
+    # raise NotImplementedError("Optional: implement multiply_schoolbook")
+    result = np.zeros(len(a) + len(b), dtype=np.int64)
+    for i, ai in enumerate(a):
+        for j, bj in enumerate(b):
+            result[i + j] += ai * bj
+    return result
 
 
 def multiply(text_a, text_b, method):
@@ -135,7 +197,27 @@ def multiply(text_a, text_b, method):
     (bonus). Pick the engine, convert to limbs, convolve, carry, re-sign.
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement multiply")
+    # raise NotImplementedError("Implement multiply")
+    sign_a, limbs_a = to_limbs(text_a)
+    sign_b, limbs_b = to_limbs(text_b)
+    sign = sign_a * sign_b
+    if method == "dft":
+        engine = DFTAnalyzer()
+    elif method == "fft":
+        engine = FFTTransformer()
+    elif method == "schoolbook":
+        engine = None  # Not used for schoolbook
+    elif method == "arbitrary":
+        engine = ArbitraryLengthFFT()
+    else:
+        raise ValueError("unknown method")
+    if engine is not None:
+        result, N = multiply_transform(limbs_a, limbs_b, engine)
+    else:
+        result = multiply_schoolbook(limbs_a, limbs_b)
+        N = None
+    product = from_limbs(sign, result)
+    return product, N, limbs_a, limbs_b
 
 
 def run_single(path, method, out_dir):
@@ -155,7 +237,30 @@ def run_single(path, method, out_dir):
     MISMATCH; a MISMATCH must not be silently swallowed.
     """
     # TODO: implement this function
-    raise NotImplementedError("Implement run_single")
+    # raise NotImplementedError("Implement run_single")
+    text_a, text_b = read_operands(path)
+    product, N, limbs_a, limbs_b = multiply(text_a, text_b, method)
+    write_text(os.path.join(out_dir, "product.txt"), product)
+    expected_product = str(int(text_a) * int(text_b))
+    if product == expected_product:
+        verification = "MATCH"
+    else:
+        verification = "MISMATCH"
+        print(f"MISMATCH: {path}")
+        
+    report_lines = [
+        f"Input path: {path}",
+        f"Engine: {method}",
+        f"A digit count: {len(text_a)}",
+        f"B digit count: {len(text_b)}",
+        f"Base digits: {BASE_DIGITS}",
+        f"A limb count: {len(limbs_a)}",
+        f"B limb count: {len(limbs_b)}",
+        f"Transform length N: {N}",
+        f"Product digit count: {len(product)}",
+        f"Verification verdict: {verification}"
+    ]
+    write_report(os.path.join(out_dir, "report.txt"), report_lines) 
 
 
 # ---------------------------------------------------------------------------
