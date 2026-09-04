@@ -1,0 +1,10 @@
+Input path: inputs/2.txt
+Engine: arbitrary
+A digit count: 200
+B digit count: 200
+Base digits: 4
+A limb count: 50
+B limb count: 50
+Transform length N: 99
+Product digit count: 400
+Verification verdict: MATCH

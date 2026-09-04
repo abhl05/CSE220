@@ -1,0 +1,9 @@
+Image path: images/skyline256.png
+Image size: 256 x 256
+Kernel name: gaussian
+Kernel size: 9 x 9
+Engine: arbitrary
+Linear convolution size: 264 x 264
+Transform size used: 264 x 264
+Verification max |spectral - direct|: 1.05e-14
+Verification: MATCH
