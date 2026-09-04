@@ -1,6 +1,7 @@
-
+# ===== 2022 Section A =====
 import numpy as np
 
+# === PORTED FROM transforms.py: next_power_of_two, FFTTransformer.transform/.inverse ===
 def next_power_of_two(n):
     k = 1
     while k < n:
@@ -47,17 +48,8 @@ def ifft(spectrum):
     return np.conjugate(fft(np.conjugate(spectrum))) / N
 # === END PORTED BLOCK ===
 
-
-# Example usage
-x = 33
-y = 444
-
-# converting to digit arrays(discrete signal)
-x_digits = [int(digit) for digit in str(x)]
-y_digits = [int(digit) for digit in str(y)]
-
-# === NEW CODE: MSD-first multiply (digit order == string order, per this year's spec) ===
-def multiply_msd_first(a_digits, b_digits):
+# === NEW CODE: LSD-first multiply -- identical convention to your offline bigmul.py limbs ===
+def multiply_lsd_first(a_digits, b_digits):
     m, n = len(a_digits), len(b_digits)
     L = m + n - 1
     N = next_power_of_two(L)
@@ -66,20 +58,16 @@ def multiply_msd_first(a_digits, b_digits):
     C = ifft(fft(A) * fft(B)).real
     C = np.round(C[:L]).astype(np.int64)
 
-    carry = 0
-    result = [0] * L
-    for k in range(L - 1, -1, -1):        # rightmost index = units digit here
+    result, carry = [], 0
+    for k in range(L):
         total = int(C[k]) + carry
-        result[k] = total % 10
+        result.append(total % 10)
         carry = total // 10
     while carry:
-        result.insert(0, carry % 10)
+        result.append(carry % 10)
         carry //= 10
-    return ''.join(map(str, result)).lstrip('0') or '0'
+    return result
 
-print(f"{x} x {y} = {multiply_msd_first(x_digits, y_digits)}")
-
-# official test case
-tx, ty = 65767879797907, 765454532435435345
-print(multiply_msd_first([int(d) for d in str(tx)], [int(d) for d in str(ty)]))
-
+if __name__ == "__main__":
+    print(multiply_lsd_first([3, 2, 1], [5, 4]))     # -> [5, 3, 5, 5]   (123*45=5535)
+    print(multiply_lsd_first([9, 9, 9], [9, 9]))     # -> [1, 0, 9, 8, 9] (999*99=98901)
